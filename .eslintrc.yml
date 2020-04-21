@@ -1,0 +1,22 @@
+parserOptions:
+  ecmaVersion: 6
+  sourceType: module
+  ecmaFeatures:
+    classes: true
+    modules: true
+    blockBindings: true
+    forOf: true
+    jsx: true
+
+plugins:
+  - react
+  - react-hooks
+
+env:
+  es6: true
+  browser: true
+
+settings:
+  react:
+    version: 16.13.0
+

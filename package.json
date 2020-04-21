@@ -1,0 +1,24 @@
+{
+  "name": "shared-reducer-hooks",
+  "version": "0.0.1",
+  "description": "A light weight, easy to use, Redux like library leveraged by React-Hooks",
+  "main": "lib/index.js",
+  "repository": "https://github.com/Mutefish0/shared-reducer-hooks.git",
+  "author": "Mutefish0 <648262030@qq.com>",
+  "license": "MIT",
+  "private": false,
+  "scripts": {
+    "build": "webpack"
+  },
+  "devDependencies": {
+    "@types/event-emitter": "^0.3.3",
+    "@types/react": "^16.9.27",
+    "eslint": "^6.8.0",
+    "ts-loader": "6.2.2",
+    "typescript": "^3.8.3",
+    "webpack": "^4.42.1"
+  },
+  "dependencies": {
+    "event-emitter": "^0.3.5"
+  }
+}
