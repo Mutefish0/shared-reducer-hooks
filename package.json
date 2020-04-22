@@ -2,6 +2,12 @@
   "name": "shared-reducer-hooks",
   "version": "0.0.1",
   "description": "A light weight, easy to use, Redux like library leveraged by React-Hooks",
+  "keywords": [
+    "react",
+    "hooks",
+    "redux",
+    "store"
+  ],
   "main": "lib/index.js",
   "repository": "https://github.com/Mutefish0/shared-reducer-hooks.git",
   "author": "Mutefish0 <648262030@qq.com>",
@@ -18,7 +24,7 @@
     "typescript": "^3.8.3",
     "webpack": "^4.42.1"
   },
-  "dependencies": {
+  "peerDependencies": {
     "event-emitter": "^0.3.5"
   }
 }
