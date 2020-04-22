@@ -1,6 +1,38 @@
 const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
-module.exports = {
+const devConfig = {
+  entry: './examples/index.tsx',
+  module: {
+    rules: [
+      {
+        test: /\.(js|mjs|jsx|ts|tsx)$/,
+        include: [path.resolve(__dirname, 'examples'), path.resolve(__dirname, 'src')],
+        loader: require.resolve('babel-loader'),
+        options: {
+          presets: [require.resolve('babel-preset-react-app')],
+        },
+      },
+    ],
+  },
+  devServer: {
+    contentBase: './dist',
+  },
+  output: {
+    filename: '[name].bundle.js',
+    path: path.resolve(__dirname, 'dist'),
+  },
+  plugins: [new HtmlWebpackPlugin()],
+  resolve: {
+    extensions: ['tsx', '.ts', '.js'],
+  },
+  optimization: {
+    minimize: false,
+  },
+};
+
+const buildConfig = {
+  mode: 'production',
   entry: './src/index.ts',
   module: {
     rules: [
@@ -22,9 +54,11 @@ module.exports = {
   },
   externals: {
     react: 'react',
-    EventEmitter: 'event-emitter',
+    'event-emitter': 'event-emitter',
   },
   optimization: {
     minimize: false,
   },
 };
+
+module.exports = process.env.NODE_ENV === 'development' ? devConfig : buildConfig;

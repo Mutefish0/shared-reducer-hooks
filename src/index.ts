@@ -5,20 +5,34 @@ import { Reducer } from 'react';
 export default function SharedReducer<S, A>(reducer: Reducer<S, A>) {
   let store = reducer([][0], {} as A);
   let emitter = EventEmitter();
-  function useState() {
-    const [state, setState] = useReactState<S>(store);
-    useEffect(() => {
-      const listener = (nextState: S) => setState(nextState);
-      emitter.on('update', listener);
-      return () => emitter.off('update', listener);
-    }, []);
-    return state;
+
+  function mapState<T>(mapper: (state: S) => T): () => T {
+    const initialMappedState = mapper(store);
+    return () => {
+      const [cachedMappedState, setCachedMappedState] = useReactState(initialMappedState);
+
+      useEffect(() => {
+        const listener = () => {
+          const mappedState = mapper(store);
+          if (mappedState !== cachedMappedState) {
+            console.log('setState');
+            setCachedMappedState(mappedState);
+          }
+        };
+        emitter.on('update', listener);
+        return () => emitter.off('update', listener);
+      }, []);
+
+      return cachedMappedState;
+    };
   }
+
   function dispatch(action: A) {
     store = reducer(store, action);
-    emitter.emit('update', store);
+    emitter.emit('update');
   }
-  return [useState, dispatch] as [() => S, (action: A) => void];
+
+  return [mapState, dispatch] as [typeof mapState, typeof dispatch];
 }
 
 // createSelector方法

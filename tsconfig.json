@@ -10,12 +10,13 @@
     "forceConsistentCasingInFileNames": true,
     "module": "esnext",
     "isolatedModules": false,
-    "moduleResolution": "node",
+    "moduleResolution": "Node",
     "resolveJsonModule": true,
     "strict": true,
     "declaration": true,
-    "outDir": "lib"
+    "outDir": "lib",
+    "jsx": "react"
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts"],
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "examples/**/*.ts", "examples/**/*.tsx"],
   "exclude": ["node_modules/"]
 }
