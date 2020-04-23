@@ -17,6 +17,6 @@
     "outDir": "lib",
     "jsx": "react"
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts", "examples/**/*.ts", "examples/**/*.tsx"],
+  "include": ["src/**/*.ts", "src/**/*.d.ts"],
   "exclude": ["node_modules/"]
 }

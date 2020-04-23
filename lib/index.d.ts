@@ -1,5 +1,5 @@
 import { Reducer } from 'react';
-export default function SharedReducer<S, A>(reducer: Reducer<S, A>): [() => S, (action: A) => void];
+export default function SharedReducer<S, A>(reducer: Reducer<S, A>): [<T>(mapper: (state: S) => T) => () => T, (action: A) => void];
 declare type ReturnArray<T> = {
     [P in keyof T]: T[P] extends () => infer U ? () => U : () => T[P];
 };
