@@ -1,35 +1,54 @@
-import EventEmitter from 'event-emitter';
 import { useEffect, useState as useReactState } from 'react';
 import { Reducer } from 'react';
+interface Token {
+  id: number;
+}
 
 export default function SharedReducer<S, A>(reducer: Reducer<S, A>) {
   let store = reducer([][0], {} as A);
-  let emitter = EventEmitter();
+  let tokenId: number = 0;
+  let callbacksIds: number[] = [];
+  const callbackEntity: { [key: number]: any } = {};
+  let batchMap: { [key: number]: boolean } = {};
+
+  function useToken() {
+    const [cachedToken, setCachedToken] = useReactState<Token>({ id: tokenId + 1 });
+    if (cachedToken.id > tokenId) {
+      tokenId = cachedToken.id;
+    }
+    batchMap[cachedToken.id] = true;
+    return [cachedToken, () => setCachedToken({ id: cachedToken.id })] as [Token, () => void];
+  }
 
   function mapState<T>(mapper: (state: S) => T): () => T {
-    const initialMappedState = mapper(store);
     return () => {
-      const [cachedMappedState, setCachedMappedState] = useReactState(initialMappedState);
+      const [token, forceUpdate] = useToken();
 
       useEffect(() => {
-        const listener = () => {
-          const mappedState = mapper(store);
-          if (mappedState !== cachedMappedState) {
-            console.log('setState');
-            setCachedMappedState(mappedState);
+        callbackEntity[token.id] = (lastStore: S, nextStore: S) => {
+          if (mapper(lastStore) !== mapper(nextStore) && !batchMap[token.id]) {
+            forceUpdate();
           }
         };
-        emitter.on('update', listener);
-        return () => emitter.off('update', listener);
+
+        callbacksIds.push(token.id);
+        callbacksIds.sort();
+
+        return () => {
+          callbacksIds = callbacksIds.filter((id) => id !== token.id);
+          delete callbackEntity[token.id];
+        };
       }, []);
 
-      return cachedMappedState;
+      return mapper(store);
     };
   }
 
   function dispatch(action: A) {
+    const lastStore = store;
     store = reducer(store, action);
-    emitter.emit('update');
+    batchMap = {};
+    callbacksIds.forEach((cbId) => callbackEntity[cbId](lastStore, store));
   }
 
   return [mapState, dispatch] as [typeof mapState, typeof dispatch];

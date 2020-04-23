@@ -1,67 +1,96 @@
-import React, { useEffect } from 'react';
+import React, { useState } from 'react';
 import { render } from 'react-dom';
 import SharedReducer from '../src/index';
 
-interface Action {
-  type: 'add';
+interface Counter {
+  counterA: number;
+  counterB: number;
 }
 
-type State = number;
+const initialState: Counter = {
+  counterA: 0,
+  counterB: 0,
+};
 
-const [mapState, dispatch] = SharedReducer((state: State = 1, action: Action) => {
+interface Action {
+  type: 'addA' | 'addB';
+}
+
+// reducer
+const [mapState, dispatch] = SharedReducer((state: Counter = initialState, action: Action) => {
   switch (action.type) {
-    case 'add':
-      return state + 1;
+    case 'addA':
+      return { ...state, counterA: state.counterA + 1 };
+    case 'addB':
+      return { ...state, counterB: state.counterB + 1 };
     default:
       return state;
   }
 });
 
-const useCounter = mapState((x) => x);
-function addCounter() {
-  dispatch({ type: 'add' });
-}
+//const useCounterA = mapState.counterA;
 
-function CompB() {
-  const counter = useCounter();
+// states
+const useCounterA = mapState((state) => {
+  return state.counterA;
+});
 
-  useEffect(() => {
-    console.log('effect B');
-  }, []);
+const useCounterB = mapState((state) => {
+  return state.counterB;
+});
 
-  console.log('render CompB');
+const useCounterC = mapState((state) => {
+  return state.counterA + state.counterB;
+});
+
+// actions
+const addCounterA = () => dispatch({ type: 'addA' });
+const addCounterB = () => dispatch({ type: 'addB' });
+
+// components
+function CounterA() {
+  console.log('render A');
+  const counterA = useCounterA();
   return (
     <div>
-      <h2>CompB: {counter}</h2>
+      <h2>CounterA {counterA}</h2>
     </div>
   );
 }
 
-function CompA() {
-  const counter = useCounter();
-
-  useEffect(() => {
-    console.log('effect A');
-  }, []);
-
-  console.log('render CompA');
+function CounterB() {
+  console.log('render B');
+  const counterB = useCounterB();
   return (
     <div>
-      <h2>CompA: {counter}</h2>
-      <CompB />
+      <h2>CounterB {counterB}</h2>
     </div>
   );
 }
 
-function CompC() {
-  const counter = useCounter();
-  useEffect(() => {
-    console.log('effect C');
-  }, []);
-  console.log('render CompC');
+function CounterC() {
+  console.log('render C');
+  const counterC = useCounterC();
   return (
     <div>
-      <h2>CompC: {counter}</h2>
+      <h2>CounterC {counterC}</h2>
+    </div>
+  );
+}
+
+function Panel() {
+  console.log('render Panel');
+  const counterA = useCounterA();
+  const counterB = useCounterB();
+  const counterC = useCounterC();
+  return (
+    <div>
+      <h2>Panel</h2>
+      <p>CounterA: {counterA}</p>
+      <button onClick={addCounterA}>add counterA</button>
+      <p>CounterB: {counterB}</p>
+      <button onClick={addCounterB}>add counterB</button>
+      <p>CounterC: {counterC}</p>
     </div>
   );
 }
@@ -70,19 +99,18 @@ function App() {
   console.log('render App');
   return (
     <div>
-      <h1>App</h1>
-      <CompA />
-      <CompC />
-      <hr />
-      <button onClick={addCounter}>add</button>
+      <Panel />
+      <CounterA />
+      <CounterB />
+      <CounterC />
     </div>
   );
 }
 
-setTimeout(addCounter, 4000);
-
 const appContainer = document.createElement('div');
 appContainer.setAttribute('id', 'app');
 document.body.appendChild(appContainer);
+
+setInterval(addCounterA, 4000);
 
 render(<App />, appContainer);
