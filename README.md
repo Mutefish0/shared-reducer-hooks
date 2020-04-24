@@ -10,7 +10,7 @@ A light weight, easy to use, Redux like library leveraged by React-Hooks
 
 Let's create a simple todo list demo
 
-1. create a store
+### Create a store
 
 ```js
 const initialState = {
@@ -35,7 +35,7 @@ const [mapState, dispatch] = SharedReducer((state = initialState, action) => {
 });
 ```
 
-2. actions and map states
+### Actions and states
 
 ```js
 let uuid = 1;
@@ -60,7 +60,7 @@ const useOverview = mapState((state) => {
 });
 ```
 
-3. components
+### Components
 
 ```jsx
 function Overview() {
@@ -126,5 +126,5 @@ function App() {
 }
 ```
 
-4. snapshot
-   ![todos](https://raw.githubusercontent.com/Mutefish0/shared-reducer-hooks/master/examples/snapshot.gif)
+### Snapshot
+![todos](https://raw.githubusercontent.com/Mutefish0/shared-reducer-hooks/master/examples/snapshot.gif)
