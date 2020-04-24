@@ -13,6 +13,8 @@ Let's create a simple todo list demo
 ### Create a store
 
 ```js
+import SharedReducer from 'shared-reducer-hooks';
+
 const initialState = {
   todos: [],
 };
