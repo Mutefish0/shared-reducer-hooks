@@ -17,7 +17,7 @@
     "start": "NODE_ENV=development webpack-dev-server",
     "build": "NODE_ENV=production webpack",
     "test": "jest",
-    "publish": "yarn test && yarn build && npm publish --access public"
+    "prepublish": "yarn test && yarn build"
   },
   "devDependencies": {
     "@testing-library/react": "9.5.0",
