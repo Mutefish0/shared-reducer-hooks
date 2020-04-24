@@ -127,4 +127,4 @@ function App() {
 ```
 
 4. snapshot
-   ![todos](https://github.com/Mutefish0/shared-reducer-hooks/raw/master/examples/snapshot.git)
+   ![todos](https://raw.githubusercontent.com/Mutefish0/shared-reducer-hooks/master/examples/snapshot.gif)
