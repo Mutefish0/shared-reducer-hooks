@@ -1,18 +1,8 @@
-# shared-reducer-hooks
+import React, { useState } from 'react';
+import { render } from 'react-dom';
+import SharedReducer from '../src/index';
 
-A light weight, easy to use, Redux like library leveraged by React-Hooks
-
-## Install
-
-`$ npm install shared-reducer-hooks`
-
-## Usage
-
-Let's create a simple todo list demo
-
-1. create a store
-
-```js
+/************************ reducer **************************/
 const initialState = {
   todos: [],
 };
@@ -33,23 +23,18 @@ const [mapState, dispatch] = SharedReducer((state = initialState, action) => {
       return state;
   }
 });
-```
 
-2. actions and map states
-
-```js
+/****************************** actions ***************************/
 let uuid = 1;
-
 function addTodoAction(title) {
   dispatch({ type: 'add', payload: { id: uuid++, title } });
 }
-
 function deleteTodoAction(id) {
   dispatch({ type: 'delete', payload: { id } });
 }
 
+/***************************** map states ***************************/
 const useTodos = mapState((state) => state.todos);
-
 const useOverview = mapState((state) => {
   const total = state.todos.length;
   const current = total > 0 ? state.todos[0].title : 'none';
@@ -58,11 +43,7 @@ const useOverview = mapState((state) => {
     current,
   };
 });
-```
-
-3. components
-
-```jsx
+/***************************** components ***************************/
 function Overview() {
   const overview = useOverview();
   return (
@@ -77,11 +58,9 @@ function Overview() {
 
 function TodoList() {
   const todos = useTodos();
-
   function onDelete(id) {
     deleteTodoAction(id);
   }
-
   return (
     <div>
       <h2>List</h2>
@@ -98,12 +77,10 @@ function TodoList() {
 
 function AddTodo() {
   const [title, setTitle] = useState('');
-
   function onSubmit() {
     addTodoAction(title);
     setTitle('');
   }
-
   return (
     <div>
       <h2>Add Todo</h2>
@@ -124,7 +101,8 @@ function App() {
     </div>
   );
 }
-```
 
-4. snapshot
-   ![todos](https://github.com/Mutefish0/shared-reducer-hooks/raw/master/examples/snapshot.git)
+const appContainer = document.createElement('div');
+document.body.appendChild(appContainer);
+
+render(<App />, appContainer);

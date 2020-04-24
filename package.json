@@ -1,6 +1,6 @@
 {
   "name": "shared-reducer-hooks",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A light weight, easy to use, Redux like library leveraged by React-Hooks",
   "keywords": [
     "react",
@@ -16,7 +16,8 @@
   "scripts": {
     "start": "NODE_ENV=development webpack-dev-server",
     "build": "NODE_ENV=production webpack",
-    "test": "jest"
+    "test": "jest",
+    "publish": "yarn test && yarn build && npm publish --access public"
   },
   "devDependencies": {
     "@testing-library/react": "9.5.0",

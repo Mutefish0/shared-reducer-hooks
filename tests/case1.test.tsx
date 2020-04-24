@@ -1,5 +1,5 @@
 import React from 'react';
-import SharedReducer from '../lib/index';
+import SharedReducer from '../src/index';
 import { render } from '@testing-library/react';
 import { act } from 'react-dom/test-utils';
 

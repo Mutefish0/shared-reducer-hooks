@@ -2,7 +2,7 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 const devConfig = {
-  entry: './examples/index.tsx',
+  entry: './examples/index.jsx',
   devtool: 'inline-source-map',
   module: {
     rules: [
