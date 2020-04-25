@@ -1,6 +1,6 @@
 # shared-reducer-hooks
 
-A light weight, easy to use, Redux like library leveraged by React-Hooks，no `Provider`, no unnecessary re-rendering.
+A light weight, easy to use, Redux like library leveraged by React-Hooks, no `Provider`, no unnecessary re-rendering.
 
 ## Install
 
