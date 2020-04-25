@@ -39,14 +39,16 @@ interface Token {
 
 export default function SharedReducer<S, A>(reducer: Reducer<S, A>) {
   let store = reducer([][0], {} as A);
-  let tokenId: number = 0;
+  let maxTokenId: number = 0;
+  let maxMapperId: number = 0;
+  let cachedState: { [key: number]: any } = {};
   let batchMap: { [key: number]: boolean } = {};
   const emitter = createEmitter<S>();
 
   function useToken(): [Token, (t: Token) => void] {
-    const [cachedToken, setCachedToken] = useReactState<Token>({ id: tokenId + 1 });
-    if (cachedToken.id > tokenId) {
-      tokenId = cachedToken.id;
+    const [cachedToken, setCachedToken] = useReactState<Token>({ id: maxTokenId + 1 });
+    if (cachedToken.id > maxTokenId) {
+      maxTokenId = cachedToken.id;
       emitter.digOn(cachedToken.id);
     }
     batchMap[cachedToken.id] = true;
@@ -54,11 +56,20 @@ export default function SharedReducer<S, A>(reducer: Reducer<S, A>) {
   }
 
   function mapState<T>(mapper: (state: S) => T): () => T {
+    const mapperId = maxMapperId++;
+
+    function getMappedState(store: S) {
+      if (!cachedState[mapperId]) {
+        cachedState[mapperId] = mapper(store);
+      }
+      return cachedState[mapperId];
+    }
+
     return () => {
       const [token, forceUpdate] = useToken();
       useEffect(() => {
         emitter.layOn(token.id, (lastStore: S, nextStore: S) => {
-          if (!batchMap[token.id] && mapper(lastStore) !== mapper(nextStore)) {
+          if (!batchMap[token.id] && mapper(lastStore) !== getMappedState(nextStore)) {
             forceUpdate({ id: token.id });
           }
         });
@@ -67,7 +78,7 @@ export default function SharedReducer<S, A>(reducer: Reducer<S, A>) {
         };
       }, []);
 
-      return mapper(store);
+      return getMappedState(store);
     };
   }
 
@@ -75,6 +86,7 @@ export default function SharedReducer<S, A>(reducer: Reducer<S, A>) {
     const lastStore = store;
     store = reducer(store, action);
     batchMap = {};
+    cachedState = {};
     emitter.emit(lastStore, store);
   }
 
