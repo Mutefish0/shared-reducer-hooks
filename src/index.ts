@@ -1,32 +1,36 @@
 import { Reducer, useEffect, useState as useReactState } from 'react';
 
-interface Emiter<T> {
+type Callback<T> = (arg1: T, arg2: T) => void;
+function noop() {}
+
+interface Emitter<T> {
   ids: number[];
-  callbackEntity: { [key: number]: (arg1: T, arg2: T) => void };
-  on: typeof on;
+  callbackEntity: { [key: number]: Callback<T> };
+  digOn: typeof digOn;
+  layOn: typeof layOn;
   off: typeof off;
   emit: typeof emit;
 }
 
-function on<T>(this: Emiter<T>, id: number, cb: (arg1: T, arg2: T) => void) {
-  let insertIndex = this.ids.length;
-  for (; insertIndex >= 0; insertIndex--) {
-    if (id > this.ids[insertIndex]) {
-      break;
-    }
-  }
-  this.ids.splice(insertIndex + 1, 0, id);
+// 挖坑
+function digOn<T>(this: Emitter<T>, id: number) {
+  this.ids.push(id);
+  this.callbackEntity[id] = noop;
+}
+// 躺坑
+function layOn<T>(this: Emitter<T>, id: number, cb: Callback<T>) {
   this.callbackEntity[id] = cb;
 }
-function off<T>(this: Emiter<T>, id: number) {
+
+function off<T>(this: Emitter<T>, id: number) {
   delete this.callbackEntity[id];
   this.ids = this.ids.filter((_id) => _id !== id);
 }
-function emit<T>(this: Emiter<T>, arg1: T, arg2: T) {
+function emit<T>(this: Emitter<T>, arg1: T, arg2: T) {
   this.ids.forEach((id) => this.callbackEntity[id](arg1, arg2));
 }
-function createEmiter<T>(): Emiter<T> {
-  return { ids: [], callbackEntity: {}, on, off, emit };
+function createEmitter<T>(): Emitter<T> {
+  return { ids: [], callbackEntity: {}, digOn, layOn, off, emit };
 }
 
 interface Token {
@@ -37,12 +41,13 @@ export default function SharedReducer<S, A>(reducer: Reducer<S, A>) {
   let store = reducer([][0], {} as A);
   let tokenId: number = 0;
   let batchMap: { [key: number]: boolean } = {};
-  const emiter = createEmiter<S>();
+  const emitter = createEmitter<S>();
 
   function useToken(): [Token, (t: Token) => void] {
     const [cachedToken, setCachedToken] = useReactState<Token>({ id: tokenId + 1 });
     if (cachedToken.id > tokenId) {
       tokenId = cachedToken.id;
+      emitter.digOn(cachedToken.id);
     }
     batchMap[cachedToken.id] = true;
     return [cachedToken, setCachedToken];
@@ -52,13 +57,13 @@ export default function SharedReducer<S, A>(reducer: Reducer<S, A>) {
     return () => {
       const [token, forceUpdate] = useToken();
       useEffect(() => {
-        emiter.on(token.id, (lastStore: S, nextStore: S) => {
+        emitter.layOn(token.id, (lastStore: S, nextStore: S) => {
           if (!batchMap[token.id] && mapper(lastStore) !== mapper(nextStore)) {
             forceUpdate({ id: token.id });
           }
         });
         return () => {
-          emiter.off(token.id);
+          emitter.off(token.id);
         };
       }, []);
 
@@ -70,7 +75,7 @@ export default function SharedReducer<S, A>(reducer: Reducer<S, A>) {
     const lastStore = store;
     store = reducer(store, action);
     batchMap = {};
-    emiter.emit(lastStore, store);
+    emitter.emit(lastStore, store);
   }
 
   return [mapState, dispatch] as [typeof mapState, typeof dispatch];
