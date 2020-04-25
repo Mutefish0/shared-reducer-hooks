@@ -1,8 +1,8 @@
-import { Reducer, useEffect, useState as useReactState } from 'react';
+import {Reducer, useEffect, useState as useReactState} from 'react';
 
 interface Emiter<T> {
   ids: number[];
-  callbackEntity: { [key: number]: (arg1: T, arg2: T) => void };
+  callbackEntity: {[key: number]: (arg1: T, arg2: T) => void};
   on: typeof on;
   off: typeof off;
   emit: typeof emit;
@@ -26,7 +26,7 @@ function emit<T>(this: Emiter<T>, arg1: T, arg2: T) {
   this.ids.forEach((id) => this.callbackEntity[id](arg1, arg2));
 }
 function createEmiter<T>(): Emiter<T> {
-  return { ids: [], callbackEntity: {}, on, off, emit };
+  return {ids: [], callbackEntity: {}, on, off, emit};
 }
 
 interface Token {
@@ -36,11 +36,12 @@ interface Token {
 export default function SharedReducer<S, A>(reducer: Reducer<S, A>) {
   let store = reducer([][0], {} as A);
   let tokenId: number = 0;
-  let batchMap: { [key: number]: boolean } = {};
+  let batchMap: {[key: number]: boolean} = {};
   const emiter = createEmiter<S>();
 
   function useToken(): [Token, (t: Token) => void] {
-    const [cachedToken, setCachedToken] = useReactState<Token>({ id: tokenId + 1 });
+    const [cachedToken, setCachedToken] =
+        useReactState<Token>({id: tokenId + 1});
     if (cachedToken.id > tokenId) {
       tokenId = cachedToken.id;
     }
@@ -54,7 +55,7 @@ export default function SharedReducer<S, A>(reducer: Reducer<S, A>) {
       useEffect(() => {
         emiter.on(token.id, (lastStore: S, nextStore: S) => {
           if (!batchMap[token.id] && mapper(lastStore) !== mapper(nextStore)) {
-            forceUpdate({ id: token.id });
+            forceUpdate({id: token.id});
           }
         });
         return () => {
@@ -80,48 +81,32 @@ export default function SharedReducer<S, A>(reducer: Reducer<S, A>) {
 // 当且仅当依赖的状态发生改变，才会重新进行计算
 // 可以有效提升性能，同时避免出现死循环问题
 type ReturnArray<T> = {
-  [P in keyof T]: T[P] extends () => infer U ? () => U : () => T[P];
-}; // 变长参数类型推断
+  [P in keyof T]: T[P] extends() => infer U ? () => U : () => T[P];
+};  // 变长参数类型推断
 type Args<T> = {
   [P in keyof T]: T[P] extends infer U ? U : T[P];
-}; // 变长参数类型推断
-export function createSelector<T0, T extends [any, any, any, any, any, any, any, any]>(
-  useStates: ReturnArray<T>,
-  selector: (args: Args<T>) => T0
-): () => T0;
-export function createSelector<T0, T extends [any, any, any, any, any, any, any]>(
-  useStates: ReturnArray<T>,
-  selector: (args: Args<T>) => T0
-): () => T0;
+};  // 变长参数类型推断
+export function
+    createSelector<T0, T extends [any, any, any, any, any, any, any, any]>(
+        useStates: ReturnArray<T>, selector: (args: Args<T>) => T0): () => T0;
+export function
+    createSelector<T0, T extends [any, any, any, any, any, any, any]>(
+        useStates: ReturnArray<T>, selector: (args: Args<T>) => T0): () => T0;
 export function createSelector<T0, T extends [any, any, any, any, any, any]>(
-  useStates: ReturnArray<T>,
-  selector: (args: Args<T>) => T0
-): () => T0;
+    useStates: ReturnArray<T>, selector: (args: Args<T>) => T0): () => T0;
 export function createSelector<T0, T extends [any, any, any, any, any]>(
-  useStates: ReturnArray<T>,
-  selector: (args: Args<T>) => T0
-): () => T0;
+    useStates: ReturnArray<T>, selector: (args: Args<T>) => T0): () => T0;
 export function createSelector<T0, T extends [any, any, any, any]>(
-  useStates: ReturnArray<T>,
-  selector: (args: Args<T>) => T0
-): () => T0;
+    useStates: ReturnArray<T>, selector: (args: Args<T>) => T0): () => T0;
 export function createSelector<T0, T extends [any, any, any]>(
-  useStates: ReturnArray<T>,
-  selector: (args: Args<T>) => T0
-): () => T0;
+    useStates: ReturnArray<T>, selector: (args: Args<T>) => T0): () => T0;
 export function createSelector<T0, T extends [any, any]>(
-  useStates: ReturnArray<T>,
-  selector: (args: Args<T>) => T0
-): () => T0;
+    useStates: ReturnArray<T>, selector: (args: Args<T>) => T0): () => T0;
 export function createSelector<T0, T extends [any]>(
-  useStates: ReturnArray<T>,
-  selector: (args: Args<T>) => T0
-): () => T0;
+    useStates: ReturnArray<T>, selector: (args: Args<T>) => T0): () => T0;
 export function createSelector<T0, T extends any[]>(
-  useStates: ReturnArray<T>,
-  selector: (args: Args<T>) => T0
-) {
-  return function () {
+    useStates: ReturnArray<T>, selector: (args: Args<T>) => T0) {
+  return function() {
     const states = useStates.map((us) => us()) as Args<T>;
     const [mergedState, setMergedState] = useReactState<T0>(selector(states));
     useEffect(() => setMergedState(selector(states)), states);

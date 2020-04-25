@@ -1,6 +1,6 @@
 # shared-reducer-hooks
 
-A light weight, easy to use, Redux like library leveraged by React-Hooks
+A light weight, easy to use, Redux like library leveraged by React-Hooks，no `Provider`, no unnecessary re-rendering.
 
 ## Install
 
@@ -129,4 +129,5 @@ function App() {
 ```
 
 ### Snapshot
+
 ![todos](https://raw.githubusercontent.com/Mutefish0/shared-reducer-hooks/master/examples/snapshot.gif)

@@ -1,7 +1,8 @@
 import React from 'react';
 import SharedReducer from '../src/index';
 import { render } from '@testing-library/react';
-import { act } from 'react-dom/test-utils';
+
+import './suppressWarn';
 
 type State = number;
 interface Action {
@@ -17,14 +18,11 @@ const [mapState, dispatch] = SharedReducer((state: State = 1, action: Action) =>
   }
 });
 
-/* ------------------ mapStates --------------*/
 const useCounter = mapState((x) => x);
-/* ------------------ actions ----------------*/
 function increaseCounter() {
   dispatch({ type: 'increase' });
 }
 
-/* ------------------ components ----------------*/
 let renderingLogs = [];
 
 function App() {
@@ -34,11 +32,11 @@ function App() {
   return <div></div>;
 }
 
-describe('case1', () => {
-  test('updates in same component should be merged', () => {
+describe('two sibling components', () => {
+  test('updates should be merged', () => {
     render(<App />);
     renderingLogs = [];
-    act(() => increaseCounter());
+    increaseCounter();
     expect(renderingLogs).toEqual([{ component: 'App', counterA: 2, counterB: 2 }]);
   });
 });

@@ -1,7 +1,8 @@
 import React from 'react';
 import SharedReducer from '../src/index';
 import { render } from '@testing-library/react';
-import { act } from 'react-dom/test-utils';
+
+import './suppressWarn';
 
 type State = number;
 interface Action {
@@ -17,14 +18,11 @@ const [mapState, dispatch] = SharedReducer((state: State = 1, action: Action) =>
   }
 });
 
-/* ------------------ mapStates --------------*/
 const useCounter = mapState((x) => x);
-/* ------------------ actions ----------------*/
 function increaseCounter() {
   dispatch({ type: 'increase' });
 }
 
-/* ------------------ components ----------------*/
 let renderingLogs = [];
 
 function CompA() {
@@ -61,10 +59,16 @@ describe('basic', () => {
   test('CompA and CompB should both get updated', () => {
     render(<App />);
     renderingLogs = [];
-    act(() => increaseCounter());
+    increaseCounter();
     expect(renderingLogs).toEqual([
       { component: 'CompA', counter: 2 },
       { component: 'CompB', counter: 2 },
+    ]);
+    renderingLogs = [];
+    increaseCounter();
+    expect(renderingLogs).toEqual([
+      { component: 'CompA', counter: 3 },
+      { component: 'CompB', counter: 3 },
     ]);
   });
 });

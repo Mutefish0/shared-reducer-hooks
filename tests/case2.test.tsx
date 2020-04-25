@@ -1,7 +1,8 @@
 import React from 'react';
 import SharedReducer from '../src/index';
 import { render } from '@testing-library/react';
-import { act } from 'react-dom/test-utils';
+
+import './suppressWarn';
 
 type State = number;
 interface Action {
@@ -34,7 +35,6 @@ function increaseCounter2() {
   dispatch2({ type: 'increase' });
 }
 
-/* ------------------ components ----------------*/
 let renderingLogs = [];
 
 function App() {
@@ -44,18 +44,18 @@ function App() {
   return <div></div>;
 }
 
-describe('case2', () => {
+describe('two reducers', () => {
   test('counter1 and counter2 works respectively', () => {
     renderingLogs = [];
     render(<App />);
     expect(renderingLogs).toEqual([{ component: 'App', counter1: 1, counter2: 1 }]);
 
     renderingLogs = [];
-    act(() => increaseCounter1());
+    increaseCounter1();
     expect(renderingLogs).toEqual([{ component: 'App', counter1: 2, counter2: 1 }]);
 
     renderingLogs = [];
-    act(() => increaseCounter2());
+    increaseCounter2();
     expect(renderingLogs).toEqual([{ component: 'App', counter1: 2, counter2: 2 }]);
   });
 });
