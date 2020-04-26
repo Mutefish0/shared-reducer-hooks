@@ -29,13 +29,26 @@ const [mapState, dispatch] = SharedReducer((state: State = initialState, action:
   }
 });
 
-const useCounterA = mapState((x) => x.counterA);
-const useCounterB = mapState((x) => x.counterB);
-const useCounterC = mapState((x) => x.counterC);
+let mappingLogs = [];
+
+const useCounterA = mapState((x) => {
+  mappingLogs.push({ mapper: 'counterA' });
+  return x.counterA;
+});
+const useCounterB = mapState((x) => {
+  mappingLogs.push({ mapper: 'counterB' });
+  return x.counterB;
+});
+const useCounterC = mapState((x) => {
+  mappingLogs.push({ mapper: 'counterC' });
+  return x.counterC;
+});
 const useCounterAB = createSelector([useCounterA, useCounterB], ([counterA, counterB]) => {
+  mappingLogs.push({ mapper: 'counterA + counterB' });
   return counterA + counterB;
 });
 const useCounterAB_C = createSelector([useCounterAB, useCounterC], ([counterAB, counterC]) => {
+  mappingLogs.push({ mapper: 'counterAB + counterC' });
   return counterAB + counterC;
 });
 
@@ -91,6 +104,7 @@ function App() {
 
 describe('nested selector', () => {
   test('works fine', () => {
+    mappingLogs = [];
     renderingLogs = [];
     render(<App />);
     expect(renderingLogs).toEqual([
@@ -100,7 +114,15 @@ describe('nested selector', () => {
       { component: 'AB', counterAB: 0 },
       { component: 'AB_C', counterAB_C: 0 },
     ]);
+    expect(mappingLogs).toEqual([
+      { mapper: 'counterA' },
+      { mapper: 'counterB' },
+      { mapper: 'counterC' },
+      { mapper: 'counterA + counterB' },
+      { mapper: 'counterAB + counterC' },
+    ]);
 
+    mappingLogs = [];
     renderingLogs = [];
     incareseCounterA();
     expect(renderingLogs).toEqual([
@@ -108,7 +130,15 @@ describe('nested selector', () => {
       { component: 'AB', counterAB: 1 },
       { component: 'AB_C', counterAB_C: 1 },
     ]);
+    expect(mappingLogs).toEqual([
+      { mapper: 'counterA' },
+      { mapper: 'counterB' },
+      { mapper: 'counterC' },
+      { mapper: 'counterA + counterB' },
+      { mapper: 'counterAB + counterC' },
+    ]);
 
+    mappingLogs = [];
     renderingLogs = [];
     incareseCounterB();
     expect(renderingLogs).toEqual([
@@ -116,12 +146,26 @@ describe('nested selector', () => {
       { component: 'AB', counterAB: 2 },
       { component: 'AB_C', counterAB_C: 2 },
     ]);
+    expect(mappingLogs).toEqual([
+      { mapper: 'counterA' },
+      { mapper: 'counterB' },
+      { mapper: 'counterC' },
+      { mapper: 'counterA + counterB' },
+      { mapper: 'counterAB + counterC' },
+    ]);
 
+    mappingLogs = [];
     renderingLogs = [];
     incareseCounterC();
     expect(renderingLogs).toEqual([
       { component: 'C', counterC: 1 },
       { component: 'AB_C', counterAB_C: 3 },
+    ]);
+    expect(mappingLogs).toEqual([
+      { mapper: 'counterA' },
+      { mapper: 'counterB' },
+      { mapper: 'counterC' },
+      { mapper: 'counterAB + counterC' },
     ]);
   });
 });

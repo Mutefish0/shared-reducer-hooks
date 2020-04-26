@@ -26,8 +26,16 @@ const [mapState, dispatch] = SharedReducer((state: State = initialState, action:
   }
 });
 
-const useCounterA = mapState((x) => x.counterA);
-const useCounterB = mapState((x) => x.counterB);
+let mappingLogs = [];
+
+const useCounterA = mapState((x) => {
+  mappingLogs.push({ mapper: 'counterA' });
+  return x.counterA;
+});
+const useCounterB = mapState((x) => {
+  mappingLogs.push({ mapper: 'counterB' });
+  return x.counterB;
+});
 
 function incareseCounterA() {
   dispatch({ type: 'incareseA' });
@@ -60,12 +68,30 @@ describe('two mapped states', () => {
   test('only when mapped state itself changed should cause re-rendering', () => {
     render(<App />);
 
+    mappingLogs = [];
     renderingLogs = [];
     incareseCounterA();
     expect(renderingLogs).toEqual([{ component: 'A', counterA: 1 }]);
+    expect(mappingLogs).toEqual([
+      {
+        mapper: 'counterA',
+      },
+      {
+        mapper: 'counterB',
+      },
+    ]);
 
+    mappingLogs = [];
     renderingLogs = [];
     incareseCounterB();
     expect(renderingLogs).toEqual([{ component: 'B', counterB: 1 }]);
+    expect(mappingLogs).toEqual([
+      {
+        mapper: 'counterA',
+      },
+      {
+        mapper: 'counterB',
+      },
+    ]);
   });
 });

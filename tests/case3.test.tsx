@@ -18,7 +18,12 @@ const [mapState, dispatch] = SharedReducer((state: State = 1, action: Action) =>
   }
 });
 
-const useCounter = mapState((x) => x);
+let mappingLogs = [];
+
+const useCounter = mapState((x) => {
+  mappingLogs.push({ mapper: 'counter' });
+  return x;
+});
 
 function increaseCounter() {
   dispatch({ type: 'increase' });
@@ -78,12 +83,18 @@ describe('nested components', () => {
   test('updates in the same path should be merged', () => {
     render(<App />);
     renderingLogs = [];
+    mappingLogs = [];
     increaseCounter();
     expect(renderingLogs).toHaveLength(3);
     expect(renderingLogs).toEqual([
       { component: 'A', counter: 2 },
       { component: 'B', counter: 2 },
       { component: 'C', counter: 2 },
+    ]);
+    expect(mappingLogs).toEqual([
+      {
+        mapper: 'counter',
+      },
     ]);
   });
 });

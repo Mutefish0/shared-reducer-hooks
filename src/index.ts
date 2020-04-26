@@ -40,41 +40,61 @@ function createEmitter(): Emitter {
   return { ids: [], callbackEntity: {}, digOn, layOn, off, emit };
 }
 
-interface Token<MS> {
+interface Token {
   id: number;
-  state: MS;
+  versionId: number;
 }
 
 export default function SharedReducer<S, A>(reducer: Reducer<S, A>) {
   let store = reducer([][0], {} as A);
-  let tokenId: number = 0;
-  let batchMap: { [key: number]: boolean } = {};
+  let maxTokenId: number = 0;
+  let maxMapperId: number = 0;
+  let batchFlags: { [key: number]: boolean } = {};
+  let mapperFlags: { [key: number]: boolean } = {};
   const emitter = createEmitter();
 
-  function useToken<MS>(mapper: (s: S) => MS): [Token<MS>, (t: Token<MS>) => void] {
-    const [cachedToken, setCachedToken] = useReactState<Token<MS>>({
-      id: tokenId + 1,
-      state: undefined as any,
+  function useToken(initCache: () => void): [Token, (t: Token) => void] {
+    const [token, setToken] = useReactState<Token>({
+      id: maxTokenId + 1,
+      versionId: 0,
     });
-    if (cachedToken.id > tokenId) {
-      tokenId = cachedToken.id;
-      cachedToken.state = mapper(store);
-      emitter.digOn(cachedToken.id);
+    if (token.id > maxTokenId) {
+      maxTokenId = token.id;
+      emitter.digOn(token.id);
+      initCache();
     }
-    batchMap[cachedToken.id] = true;
-    return [cachedToken, setCachedToken];
+    batchFlags[token.id] = true;
+    return [token, setToken];
   }
 
   function mapState<MS>(mapper: (state: S) => MS): () => MS {
+    let cache: MS;
+    let mapperId = maxMapperId++;
+    let versionId = 0;
+
+    function initCache() {
+      if (!mapperFlags[mapperId]) {
+        cache = mapper(store);
+        mapperFlags[mapperId] = true;
+      }
+    }
+
     return (notify?: () => void) => {
-      const [token, forceUpdate] = useToken<MS>(mapper);
+      const [token, forceUpdate] = useToken(initCache);
       useEffect(() => {
         emitter.layOn(token.id, () => {
-          const nextState = mapper(store);
-          if (token.state !== nextState) {
-            token.state = nextState;
+          if (!mapperFlags[mapperId]) {
+            const nextState = mapper(store);
+            if (cache !== nextState) {
+              cache = nextState;
+              versionId++;
+            }
+            mapperFlags[mapperId] = true;
+          }
+          if (token.versionId !== versionId) {
+            token.versionId = versionId;
             notify && notify();
-            return () => !batchMap[token.id] && forceUpdate({ ...token });
+            return () => !batchFlags[token.id] && forceUpdate({ ...token });
           }
         });
         return () => {
@@ -82,13 +102,14 @@ export default function SharedReducer<S, A>(reducer: Reducer<S, A>) {
         };
       }, []);
 
-      return token.state;
+      return cache;
     };
   }
 
   function dispatch(action: A) {
     store = reducer(store, action);
-    batchMap = {};
+    batchFlags = {};
+    mapperFlags = {};
     emitter.emit();
   }
 

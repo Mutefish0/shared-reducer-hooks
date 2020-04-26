@@ -18,7 +18,13 @@ const [mapState, dispatch] = SharedReducer((state: State = 1, action: Action) =>
   }
 });
 
-const useCounter = mapState((x) => x);
+let mappingLogs = [];
+
+const useCounter = mapState((x) => {
+  mappingLogs.push({ mapper: 'counter' });
+  return x;
+});
+
 function increaseCounter() {
   dispatch({ type: 'increase' });
 }
@@ -49,26 +55,33 @@ function App() {
 describe('basic', () => {
   test('should render initial value correctly', () => {
     renderingLogs = [];
+    mappingLogs = [];
     render(<App />);
     expect(renderingLogs).toEqual([
       { component: 'CompA', counter: 1 },
       { component: 'CompB', counter: 1 },
     ]);
+    expect(mappingLogs).toEqual([{ mapper: 'counter' }]);
   });
 
   test('CompA and CompB should both get updated', () => {
     render(<App />);
     renderingLogs = [];
+    mappingLogs = [];
     increaseCounter();
     expect(renderingLogs).toEqual([
       { component: 'CompA', counter: 2 },
       { component: 'CompB', counter: 2 },
     ]);
+    expect(mappingLogs).toEqual([{ mapper: 'counter' }]);
+
     renderingLogs = [];
+    mappingLogs = [];
     increaseCounter();
     expect(renderingLogs).toEqual([
       { component: 'CompA', counter: 3 },
       { component: 'CompB', counter: 3 },
     ]);
+    expect(mappingLogs).toEqual([{ mapper: 'counter' }]);
   });
 });

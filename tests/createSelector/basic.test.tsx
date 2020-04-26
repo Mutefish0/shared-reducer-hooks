@@ -27,9 +27,18 @@ const [mapState, dispatch] = SharedReducer((state: State = initialState, action:
   }
 });
 
-const useCounterA = mapState((x) => x.counterA);
-const useCounterB = mapState((x) => x.counterB);
+let mappingLogs = [];
+
+const useCounterA = mapState((x) => {
+  mappingLogs.push({ mapper: 'counterA' });
+  return x.counterA;
+});
+const useCounterB = mapState((x) => {
+  mappingLogs.push({ mapper: 'counterB' });
+  return x.counterB;
+});
 const useCounterTotal = createSelector([useCounterA, useCounterB], ([counterA, counterB]) => {
+  mappingLogs.push({ mapper: 'counterA + counterB' });
   return counterA + counterB;
 });
 
@@ -51,10 +60,17 @@ function App() {
 
 describe('createSelector basic', () => {
   test('basic correct', () => {
+    mappingLogs = [];
     renderingLogs = [];
     render(<App />);
     expect(renderingLogs).toEqual([{ counterA: 0, counterB: 0, counterTotal: 0 }]);
+    expect(mappingLogs).toEqual([
+      { mapper: 'counterA' },
+      { mapper: 'counterB' },
+      { mapper: 'counterA + counterB' },
+    ]);
 
+    mappingLogs = [];
     renderingLogs = [];
     act(() => incareseCounterA());
     expect(renderingLogs[renderingLogs.length - 1]).toEqual({
@@ -62,7 +78,13 @@ describe('createSelector basic', () => {
       counterB: 0,
       counterTotal: 1,
     });
+    expect(mappingLogs).toEqual([
+      { mapper: 'counterA' },
+      { mapper: 'counterB' },
+      { mapper: 'counterA + counterB' },
+    ]);
 
+    mappingLogs = [];
     renderingLogs = [];
     act(() => incareseCounterB());
     expect(renderingLogs[renderingLogs.length - 1]).toEqual({
@@ -70,5 +92,10 @@ describe('createSelector basic', () => {
       counterB: 1,
       counterTotal: 2,
     });
+    expect(mappingLogs).toEqual([
+      { mapper: 'counterA' },
+      { mapper: 'counterB' },
+      { mapper: 'counterA + counterB' },
+    ]);
   });
 });

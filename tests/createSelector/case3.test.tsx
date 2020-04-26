@@ -12,6 +12,8 @@ interface ActionA {
   type: 'incareseA';
 }
 
+let mappingLogs = [];
+
 const initialStateA: StateA = { counterA: 0 };
 
 const [mapStateA, dispatchA] = SharedReducer((state: StateA = initialStateA, action: ActionA) => {
@@ -23,7 +25,10 @@ const [mapStateA, dispatchA] = SharedReducer((state: StateA = initialStateA, act
   }
 });
 
-const useCounterA = mapStateA((x) => x.counterA);
+const useCounterA = mapStateA((x) => {
+  mappingLogs.push({ mapper: 'counterA' });
+  return x.counterA;
+});
 function incareseCounterA() {
   dispatchA({ type: 'incareseA' });
 }
@@ -49,13 +54,17 @@ const [mapStateB, dispatchB] = SharedReducer((state: StateB = initialStateB, act
   }
 });
 
-const useCounterB = mapStateB((x) => x.counterB);
+const useCounterB = mapStateB((x) => {
+  mappingLogs.push({ mapper: 'counterB' });
+  return x.counterB;
+});
 function incareseCounterB() {
   dispatchB({ type: 'incareseB' });
 }
 
 /** mix togather */
 const useCounterC = createSelector([useCounterA, useCounterB], ([counterA, counterB]) => {
+  mappingLogs.push({ mapper: 'counterA + counterB' });
   return counterA + counterB;
 });
 
@@ -89,6 +98,7 @@ function App() {
 
 describe('createSelector from two individul reducers', () => {
   test('works fine', () => {
+    mappingLogs = [];
     renderingLogs = [];
     render(<App />);
     expect(renderingLogs).toEqual([
@@ -96,19 +106,28 @@ describe('createSelector from two individul reducers', () => {
       { component: 'B', counterB: 0 },
       { component: 'C', counterC: 0 },
     ]);
+    expect(mappingLogs).toEqual([
+      { mapper: 'counterA' },
+      { mapper: 'counterB' },
+      { mapper: 'counterA + counterB' },
+    ]);
 
+    mappingLogs = [];
     renderingLogs = [];
     incareseCounterA();
     expect(renderingLogs).toEqual([
       { component: 'A', counterA: 1 },
       { component: 'C', counterC: 1 },
     ]);
+    expect(mappingLogs).toEqual([{ mapper: 'counterA' }, { mapper: 'counterA + counterB' }]);
 
+    mappingLogs = [];
     renderingLogs = [];
     incareseCounterB();
     expect(renderingLogs).toEqual([
       { component: 'B', counterB: 1 },
       { component: 'C', counterC: 2 },
     ]);
+    expect(mappingLogs).toEqual([{ mapper: 'counterB' }, { mapper: 'counterA + counterB' }]);
   });
 });
