@@ -126,7 +126,20 @@ export function createSelector<T0, T extends any[]>(
   useStates: ReturnArray<T>,
   selector: (args: Args<T>) => T0
 ) {
+  let cache: T0;
+  let cachedStates: T = [] as any;
   return function () {
-    return selector(useStates.map((us) => us()) as Args<T>);
+    let useCache = true;
+    for (let i = 0; i < useStates.length; i++) {
+      const nextState = useStates[i]();
+      if (cachedStates[i] !== nextState) {
+        cachedStates[i] = nextState;
+        useCache = false;
+      }
+    }
+    if (!useCache) {
+      cache = selector(cachedStates as any);
+    }
+    return cache;
   };
 }
