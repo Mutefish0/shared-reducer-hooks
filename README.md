@@ -110,7 +110,7 @@ function TodoItem({ todo }) {
     <li>
       <input type="checkbox" defaultChecked={todo.completed} onChange={onToggleCompletion} />
       <span style={{ textDecoration: todo.completed ? 'line-through' : 'none' }}>{todo.title}</span>
-      <button onClick={() => onDelete(todo.id)}>x</button>
+      <button onClick={onDelete}>x</button>
     </li>
   );
 }
@@ -166,12 +166,13 @@ import { createSelector } from 'shared-reducer-hooks';
 const useTotalCount = mapState((state) => state.todos.length);
 const useCompletedCount = mapState((state) => state.completed.length);
 const useOverview = createSelector(
-  [useTotalCount, useCompletedCount], 
+  [useTotalCount, useCompletedCount],
   // it will be recalculated when `total` or `completed` changed, otherwise we use a cached result
   ([total, completed]) => {
     return {
       total,
       completed,
     };
-});
+  }
+);
 ```

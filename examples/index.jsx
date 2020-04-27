@@ -89,7 +89,7 @@ function TodoItem({ todo }) {
     <li>
       <input type="checkbox" defaultChecked={todo.completed} onChange={onToggleCompletion} />
       <span style={{ textDecoration: todo.completed ? 'line-through' : 'none' }}>{todo.title}</span>
-      <button onClick={() => onDelete(todo.id)}>x</button>
+      <button onClick={onDelete}>x</button>
     </li>
   );
 }
