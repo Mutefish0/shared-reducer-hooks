@@ -104,7 +104,6 @@ function App() {
 
 describe('nested selector', () => {
   test('works fine', () => {
-    mappingLogs = [];
     renderingLogs = [];
     render(<App />);
     expect(renderingLogs).toEqual([
@@ -113,13 +112,6 @@ describe('nested selector', () => {
       { component: 'C', counterC: 0 },
       { component: 'AB', counterAB: 0 },
       { component: 'AB_C', counterAB_C: 0 },
-    ]);
-    expect(mappingLogs).toEqual([
-      { mapper: 'counterA' },
-      { mapper: 'counterB' },
-      { mapper: 'counterC' },
-      { mapper: 'counterA + counterB' },
-      { mapper: 'counterAB + counterC' },
     ]);
 
     mappingLogs = [];

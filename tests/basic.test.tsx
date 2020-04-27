@@ -55,13 +55,11 @@ function App() {
 describe('basic', () => {
   test('should render initial value correctly', () => {
     renderingLogs = [];
-    mappingLogs = [];
     render(<App />);
     expect(renderingLogs).toEqual([
       { component: 'CompA', counter: 1 },
       { component: 'CompB', counter: 1 },
     ]);
-    expect(mappingLogs).toEqual([{ mapper: 'counter' }]);
   });
 
   test('CompA and CompB should both get updated', () => {

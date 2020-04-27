@@ -60,15 +60,9 @@ function App() {
 
 describe('createSelector basic', () => {
   test('basic correct', () => {
-    mappingLogs = [];
     renderingLogs = [];
     render(<App />);
     expect(renderingLogs).toEqual([{ counterA: 0, counterB: 0, counterTotal: 0 }]);
-    expect(mappingLogs).toEqual([
-      { mapper: 'counterA' },
-      { mapper: 'counterB' },
-      { mapper: 'counterA + counterB' },
-    ]);
 
     mappingLogs = [];
     renderingLogs = [];

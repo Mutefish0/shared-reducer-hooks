@@ -55,11 +55,9 @@ function App() {
 
 describe('two reducers', () => {
   test('counter1 and counter2 works respectively', () => {
-    mappingLogs = [];
     renderingLogs = [];
     render(<App />);
     expect(renderingLogs).toEqual([{ component: 'App', counter1: 1, counter2: 1 }]);
-    expect(mappingLogs).toEqual([{ mapper: 'counter1' }, { mapper: 'counter2' }]);
 
     mappingLogs = [];
     renderingLogs = [];

@@ -98,18 +98,12 @@ function App() {
 
 describe('createSelector from two individul reducers', () => {
   test('works fine', () => {
-    mappingLogs = [];
     renderingLogs = [];
     render(<App />);
     expect(renderingLogs).toEqual([
       { component: 'A', counterA: 0 },
       { component: 'B', counterB: 0 },
       { component: 'C', counterC: 0 },
-    ]);
-    expect(mappingLogs).toEqual([
-      { mapper: 'counterA' },
-      { mapper: 'counterB' },
-      { mapper: 'counterA + counterB' },
     ]);
 
     mappingLogs = [];

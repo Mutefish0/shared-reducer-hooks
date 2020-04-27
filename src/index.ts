@@ -1,11 +1,11 @@
-import { Reducer, useEffect, useState as useReactState } from 'react';
+import {Reducer, useEffect, useState as useReactState, useState} from 'react';
 
 type Callback = () => any;
 function noop() {}
 
 interface Emitter {
   ids: number[];
-  callbackEntity: { [key: number]: Callback };
+  callbackEntity: {[key: number]: Callback};
   digOn: typeof digOn;
   layOn: typeof layOn;
   off: typeof off;
@@ -37,7 +37,7 @@ function emit(this: Emitter) {
   updates.forEach((u) => u());
 }
 function createEmitter(): Emitter {
-  return { ids: [], callbackEntity: {}, digOn, layOn, off, emit };
+  return {ids: [], callbackEntity: {}, digOn, layOn, off, emit};
 }
 
 interface Token {
@@ -45,15 +45,22 @@ interface Token {
   versionId: number;
 }
 
+interface MapperContext<S, T> {
+  id: number;
+  versionId: number;
+  mapper: (store: S) => T;
+  cache: T;
+}
+
 export default function SharedReducer<S, A>(reducer: Reducer<S, A>) {
   let store = reducer([][0], {} as A);
   let maxTokenId: number = 0;
   let maxMapperId: number = 0;
-  let batchFlags: { [key: number]: boolean } = {};
-  let mapperFlags: { [key: number]: boolean } = {};
+  let batchFlags: {[key: number]: boolean} = {};
+  let mapperEntity: {[key: number]: MapperContext<S, any>} = {};
   const emitter = createEmitter();
 
-  function useToken(initCache: () => void): [Token, (t: Token) => void] {
+  function useToken(): [Token, (t: Token) => void] {
     const [token, setToken] = useReactState<Token>({
       id: maxTokenId + 1,
       versionId: 0,
@@ -61,40 +68,25 @@ export default function SharedReducer<S, A>(reducer: Reducer<S, A>) {
     if (token.id > maxTokenId) {
       maxTokenId = token.id;
       emitter.digOn(token.id);
-      initCache();
     }
     batchFlags[token.id] = true;
     return [token, setToken];
   }
 
   function mapState<MS>(mapper: (state: S) => MS): () => MS {
-    let cache: MS;
-    let mapperId = maxMapperId++;
-    let versionId = 0;
-
-    function initCache() {
-      if (!mapperFlags[mapperId]) {
-        cache = mapper(store);
-        mapperFlags[mapperId] = true;
-      }
-    }
+    const mapperId = maxMapperId++;
+    const mapperContext: MapperContext<S, MS> =
+        {id: mapperId, mapper, versionId: 0, cache: mapper(store) as MS};
+    mapperEntity[mapperId] = mapperContext;
 
     return (notify?: () => void) => {
-      const [token, forceUpdate] = useToken(initCache);
+      const [token, forceUpdate] = useToken();
       useEffect(() => {
         emitter.layOn(token.id, () => {
-          if (!mapperFlags[mapperId]) {
-            const nextState = mapper(store);
-            if (cache !== nextState) {
-              cache = nextState;
-              versionId++;
-            }
-            mapperFlags[mapperId] = true;
-          }
-          if (token.versionId !== versionId) {
-            token.versionId = versionId;
+          if (mapperContext.versionId !== token.versionId) {
+            token.versionId = mapperContext.versionId;
             notify && notify();
-            return () => !batchFlags[token.id] && forceUpdate({ ...token });
+            return () => !batchFlags[token.id] && forceUpdate({...token});
           }
         });
         return () => {
@@ -102,14 +94,21 @@ export default function SharedReducer<S, A>(reducer: Reducer<S, A>) {
         };
       }, []);
 
-      return cache;
+      return mapperContext.cache;
     };
   }
 
   function dispatch(action: A) {
     store = reducer(store, action);
+    for (let mapperId in mapperEntity) {
+      const mapperItem = mapperEntity[mapperId];
+      const nextState = mapperItem.mapper(store);
+      if (mapperItem.cache !== nextState) {
+        mapperItem.cache = nextState;
+        mapperItem.versionId = mapperItem.versionId + 1;
+      }
+    }
     batchFlags = {};
-    mapperFlags = {};
     emitter.emit();
   }
 
@@ -120,52 +119,38 @@ export default function SharedReducer<S, A>(reducer: Reducer<S, A>) {
 // 当且仅当依赖的状态发生改变，才会重新进行计算
 // 可以有效提升性能，同时避免出现死循环问题
 type ReturnArray<T> = {
-  [P in keyof T]: T[P] extends (notify: () => void) => infer U
-    ? (notify: () => void) => U
-    : (notify: () => void) => T[P];
-}; // 变长参数类型推断
+  [P in keyof T]: T[P] extends(notify: () => void) => infer U ?
+      (notify: () => void) => U :
+      (notify: () => void) => T[P];
+};  // 变长参数类型推断
 type Args<T> = {
   [P in keyof T]: T[P] extends infer U ? U : T[P];
-}; // 变长参数类型推断
-export function createSelector<T0, T extends [any, any, any, any, any, any, any, any]>(
-  useMappedStates: ReturnArray<T>,
-  selector: (args: Args<T>) => T0
-): () => T0;
-export function createSelector<T0, T extends [any, any, any, any, any, any, any]>(
-  useMappedStates: ReturnArray<T>,
-  selector: (args: Args<T>) => T0
-): () => T0;
+};  // 变长参数类型推断
+export function
+    createSelector<T0, T extends [any, any, any, any, any, any, any, any]>(
+        useMappedStates: ReturnArray<T>, selector: (args: Args<T>) => T0): () =>
+        T0;
+export function
+    createSelector<T0, T extends [any, any, any, any, any, any, any]>(
+        useMappedStates: ReturnArray<T>, selector: (args: Args<T>) => T0): () =>
+        T0;
 export function createSelector<T0, T extends [any, any, any, any, any, any]>(
-  useMappedStates: ReturnArray<T>,
-  selector: (args: Args<T>) => T0
-): () => T0;
+    useMappedStates: ReturnArray<T>, selector: (args: Args<T>) => T0): () => T0;
 export function createSelector<T0, T extends [any, any, any, any, any]>(
-  useMappedStates: ReturnArray<T>,
-  selector: (args: Args<T>) => T0
-): () => T0;
+    useMappedStates: ReturnArray<T>, selector: (args: Args<T>) => T0): () => T0;
 export function createSelector<T0, T extends [any, any, any, any]>(
-  useMappedStates: ReturnArray<T>,
-  selector: (args: Args<T>) => T0
-): () => T0;
+    useMappedStates: ReturnArray<T>, selector: (args: Args<T>) => T0): () => T0;
 export function createSelector<T0, T extends [any, any, any]>(
-  useMappedStates: ReturnArray<T>,
-  selector: (args: Args<T>) => T0
-): () => T0;
+    useMappedStates: ReturnArray<T>, selector: (args: Args<T>) => T0): () => T0;
 export function createSelector<T0, T extends [any, any]>(
-  useMappedStates: ReturnArray<T>,
-  selector: (args: Args<T>) => T0
-): () => T0;
+    useMappedStates: ReturnArray<T>, selector: (args: Args<T>) => T0): () => T0;
 export function createSelector<T0, T extends [any]>(
-  useMappedStates: ReturnArray<T>,
-  selector: (args: Args<T>) => T0
-): () => T0;
+    useMappedStates: ReturnArray<T>, selector: (args: Args<T>) => T0): () => T0;
 export function createSelector<T0, T extends any[]>(
-  useMappedStates: ReturnArray<T>,
-  selector: (args: Args<T>) => T0
-) {
+    useMappedStates: ReturnArray<T>, selector: (args: Args<T>) => T0) {
   let cache: T0;
   let useCache = false;
-  return function (_notify: () => void) {
+  return function(_notify: () => void) {
     function notify() {
       useCache = false;
       _notify && _notify();
