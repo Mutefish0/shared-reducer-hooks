@@ -72,11 +72,13 @@ describe('createSelector basic', () => {
       counterB: 0,
       counterTotal: 1,
     });
-    expect(mappingLogs).toEqual([
-      { mapper: 'counterA' },
-      { mapper: 'counterB' },
-      { mapper: 'counterA + counterB' },
-    ]);
+    expect(mappingLogs).toEqual(
+      expect.arrayContaining([
+        { mapper: 'counterA' },
+        { mapper: 'counterB' },
+        { mapper: 'counterA + counterB' },
+      ])
+    );
 
     mappingLogs = [];
     renderingLogs = [];
@@ -86,10 +88,12 @@ describe('createSelector basic', () => {
       counterB: 1,
       counterTotal: 2,
     });
-    expect(mappingLogs).toEqual([
-      { mapper: 'counterA' },
-      { mapper: 'counterB' },
-      { mapper: 'counterA + counterB' },
-    ]);
+    expect(mappingLogs).toEqual(
+      expect.arrayContaining([
+        { mapper: 'counterA' },
+        { mapper: 'counterB' },
+        { mapper: 'counterA + counterB' },
+      ])
+    );
   });
 });

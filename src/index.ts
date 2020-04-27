@@ -1,4 +1,4 @@
-import {Reducer, useEffect, useState as useReactState, useState} from 'react';
+import {Reducer, useEffect, useState as useReactState} from 'react';
 
 type Callback = () => any;
 function noop() {}
@@ -50,6 +50,7 @@ interface MapperContext<S, T> {
   versionId: number;
   mapper: (store: S) => T;
   cache: T;
+  notifies: (() => void)[];
 }
 
 export default function SharedReducer<S, A>(reducer: Reducer<S, A>) {
@@ -57,7 +58,7 @@ export default function SharedReducer<S, A>(reducer: Reducer<S, A>) {
   let maxTokenId: number = 0;
   let maxMapperId: number = 0;
   let batchFlags: {[key: number]: boolean} = {};
-  let mapperEntity: {[key: number]: MapperContext<S, any>} = {};
+  let mapperContexts: MapperContext<S, any>[] = [];
   const emitter = createEmitter();
 
   function useToken(): [Token, (t: Token) => void] {
@@ -75,17 +76,25 @@ export default function SharedReducer<S, A>(reducer: Reducer<S, A>) {
 
   function mapState<MS>(mapper: (state: S) => MS): () => MS {
     const mapperId = maxMapperId++;
-    const mapperContext: MapperContext<S, MS> =
-        {id: mapperId, mapper, versionId: 0, cache: mapper(store) as MS};
-    mapperEntity[mapperId] = mapperContext;
+    const mapperContext: MapperContext<S, MS> = {
+      id: mapperId,
+      mapper,
+      versionId: 0,
+      cache: mapper(store) as MS,
+      notifies: []
+    };
+    mapperContexts.push(mapperContext);
 
-    return (notify?: () => void) => {
+    function subscribe(notify: () => void) {
+      mapperContext.notifies.push(notify);
+    }
+
+    function useMappedState() {
       const [token, forceUpdate] = useToken();
       useEffect(() => {
         emitter.layOn(token.id, () => {
           if (mapperContext.versionId !== token.versionId) {
             token.versionId = mapperContext.versionId;
-            notify && notify();
             return () => !batchFlags[token.id] && forceUpdate({...token});
           }
         });
@@ -96,16 +105,20 @@ export default function SharedReducer<S, A>(reducer: Reducer<S, A>) {
 
       return mapperContext.cache;
     };
+
+    useMappedState.subscribe = subscribe;
+
+    return useMappedState;
   }
 
   function dispatch(action: A) {
     store = reducer(store, action);
-    for (let mapperId in mapperEntity) {
-      const mapperItem = mapperEntity[mapperId];
-      const nextState = mapperItem.mapper(store);
-      if (mapperItem.cache !== nextState) {
-        mapperItem.cache = nextState;
-        mapperItem.versionId = mapperItem.versionId + 1;
+    for (let context of mapperContexts) {
+      const nextState = context.mapper(store);
+      if (context.cache !== nextState) {
+        context.cache = nextState;
+        context.versionId = context.versionId + 1;
+        context.notifies.forEach((n) => n());
       }
     }
     batchFlags = {};
@@ -119,9 +132,7 @@ export default function SharedReducer<S, A>(reducer: Reducer<S, A>) {
 // 当且仅当依赖的状态发生改变，才会重新进行计算
 // 可以有效提升性能，同时避免出现死循环问题
 type ReturnArray<T> = {
-  [P in keyof T]: T[P] extends(notify: () => void) => infer U ?
-      (notify: () => void) => U :
-      (notify: () => void) => T[P];
+  [P in keyof T]: T[P] extends() => infer U ? () => U : () => T[P];
 };  // 变长参数类型推断
 type Args<T> = {
   [P in keyof T]: T[P] extends infer U ? U : T[P];
@@ -150,16 +161,29 @@ export function createSelector<T0, T extends any[]>(
     useMappedStates: ReturnArray<T>, selector: (args: Args<T>) => T0) {
   let cache: T0;
   let useCache = false;
-  return function(_notify: () => void) {
-    function notify() {
-      useCache = false;
-      _notify && _notify();
-    }
-    const mappedStates = useMappedStates.map((u) => u(notify));
+  let notifies: (() => void)[] = [];
+
+  function subscribe(_notify: () => void) {
+    notifies.push(_notify);
+  }
+
+  function notify() {
+    useCache = false;
+    notifies.forEach((n) => n());
+  }
+
+  useMappedStates.forEach((ums) => (ums as any).subscribe(notify));
+
+  function useMappedState() {
+    const mappedStates = useMappedStates.map((ums) => ums());
     if (!useCache) {
       cache = selector(mappedStates as Args<T>);
       useCache = true;
     }
     return cache;
-  };
+  }
+
+  useMappedState.subscribe = subscribe;
+
+  return useMappedState;
 }

@@ -63,12 +63,12 @@ describe('two reducers', () => {
     renderingLogs = [];
     increaseCounter1();
     expect(renderingLogs).toEqual([{ component: 'App', counter1: 2, counter2: 1 }]);
-    expect(mappingLogs).toEqual([{ mapper: 'counter1' }]);
+    expect(mappingLogs).toEqual(expect.arrayContaining([{ mapper: 'counter1' }]));
 
     mappingLogs = [];
     renderingLogs = [];
     increaseCounter2();
     expect(renderingLogs).toEqual([{ component: 'App', counter1: 2, counter2: 2 }]);
-    expect(mappingLogs).toEqual([{ mapper: 'counter2' }]);
+    expect(mappingLogs).toEqual(expect.arrayContaining([{ mapper: 'counter2' }]));
   });
 });

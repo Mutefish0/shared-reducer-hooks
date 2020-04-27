@@ -72,26 +72,30 @@ describe('two mapped states', () => {
     renderingLogs = [];
     incareseCounterA();
     expect(renderingLogs).toEqual([{ component: 'A', counterA: 1 }]);
-    expect(mappingLogs).toEqual([
-      {
-        mapper: 'counterA',
-      },
-      {
-        mapper: 'counterB',
-      },
-    ]);
+    expect(mappingLogs).toEqual(
+      expect.arrayContaining([
+        {
+          mapper: 'counterA',
+        },
+        {
+          mapper: 'counterB',
+        },
+      ])
+    );
 
     mappingLogs = [];
     renderingLogs = [];
     incareseCounterB();
     expect(renderingLogs).toEqual([{ component: 'B', counterB: 1 }]);
-    expect(mappingLogs).toEqual([
-      {
-        mapper: 'counterA',
-      },
-      {
-        mapper: 'counterB',
-      },
-    ]);
+    expect(mappingLogs).toEqual(
+      expect.arrayContaining([
+        {
+          mapper: 'counterA',
+        },
+        {
+          mapper: 'counterB',
+        },
+      ])
+    );
   });
 });

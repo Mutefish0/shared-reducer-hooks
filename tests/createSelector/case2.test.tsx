@@ -122,13 +122,15 @@ describe('nested selector', () => {
       { component: 'AB', counterAB: 1 },
       { component: 'AB_C', counterAB_C: 1 },
     ]);
-    expect(mappingLogs).toEqual([
-      { mapper: 'counterA' },
-      { mapper: 'counterB' },
-      { mapper: 'counterC' },
-      { mapper: 'counterA + counterB' },
-      { mapper: 'counterAB + counterC' },
-    ]);
+    expect(mappingLogs).toEqual(
+      expect.arrayContaining([
+        { mapper: 'counterA' },
+        { mapper: 'counterB' },
+        { mapper: 'counterC' },
+        { mapper: 'counterA + counterB' },
+        { mapper: 'counterAB + counterC' },
+      ])
+    );
 
     mappingLogs = [];
     renderingLogs = [];
@@ -138,13 +140,15 @@ describe('nested selector', () => {
       { component: 'AB', counterAB: 2 },
       { component: 'AB_C', counterAB_C: 2 },
     ]);
-    expect(mappingLogs).toEqual([
-      { mapper: 'counterA' },
-      { mapper: 'counterB' },
-      { mapper: 'counterC' },
-      { mapper: 'counterA + counterB' },
-      { mapper: 'counterAB + counterC' },
-    ]);
+    expect(mappingLogs).toEqual(
+      expect.arrayContaining([
+        { mapper: 'counterA' },
+        { mapper: 'counterB' },
+        { mapper: 'counterC' },
+        { mapper: 'counterA + counterB' },
+        { mapper: 'counterAB + counterC' },
+      ])
+    );
 
     mappingLogs = [];
     renderingLogs = [];
@@ -153,11 +157,13 @@ describe('nested selector', () => {
       { component: 'C', counterC: 1 },
       { component: 'AB_C', counterAB_C: 3 },
     ]);
-    expect(mappingLogs).toEqual([
-      { mapper: 'counterA' },
-      { mapper: 'counterB' },
-      { mapper: 'counterC' },
-      { mapper: 'counterAB + counterC' },
-    ]);
+    expect(mappingLogs).toEqual(
+      expect.arrayContaining([
+        { mapper: 'counterA' },
+        { mapper: 'counterB' },
+        { mapper: 'counterC' },
+        { mapper: 'counterAB + counterC' },
+      ])
+    );
   });
 });

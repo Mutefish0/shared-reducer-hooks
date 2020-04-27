@@ -71,7 +71,7 @@ describe('basic', () => {
       { component: 'CompA', counter: 2 },
       { component: 'CompB', counter: 2 },
     ]);
-    expect(mappingLogs).toEqual([{ mapper: 'counter' }]);
+    expect(mappingLogs).toEqual(expect.arrayContaining([{ mapper: 'counter' }]));
 
     renderingLogs = [];
     mappingLogs = [];
@@ -80,6 +80,6 @@ describe('basic', () => {
       { component: 'CompA', counter: 3 },
       { component: 'CompB', counter: 3 },
     ]);
-    expect(mappingLogs).toEqual([{ mapper: 'counter' }]);
+    expect(mappingLogs).toEqual(expect.arrayContaining([{ mapper: 'counter' }]));
   });
 });

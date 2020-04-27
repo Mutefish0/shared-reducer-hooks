@@ -171,16 +171,18 @@ describe('nested nested selector', () => {
       { component: 'AB_D', counterAB_D: 1 },
       { component: 'AB_C__AB_D', counterAB_C__AB_D: 2 },
     ]);
-    expect(mappingLogs).toEqual([
-      { mapper: 'counterA' },
-      { mapper: 'counterB' },
-      { mapper: 'counterC' },
-      { mapper: 'counterD' },
-      { mapper: 'counterA + counterB' },
-      { mapper: 'counterAB + counterC' },
-      { mapper: 'counterAB + counterD' },
-      { mapper: 'counterAB_C + counterAB_D' },
-    ]);
+    expect(mappingLogs).toEqual(
+      expect.arrayContaining([
+        { mapper: 'counterA' },
+        { mapper: 'counterB' },
+        { mapper: 'counterC' },
+        { mapper: 'counterD' },
+        { mapper: 'counterA + counterB' },
+        { mapper: 'counterAB + counterC' },
+        { mapper: 'counterAB + counterD' },
+        { mapper: 'counterAB_C + counterAB_D' },
+      ])
+    );
 
     mappingLogs = [];
     renderingLogs = [];
@@ -192,16 +194,18 @@ describe('nested nested selector', () => {
       { component: 'AB_D', counterAB_D: 2 },
       { component: 'AB_C__AB_D', counterAB_C__AB_D: 4 },
     ]);
-    expect(mappingLogs).toEqual([
-      { mapper: 'counterA' },
-      { mapper: 'counterB' },
-      { mapper: 'counterC' },
-      { mapper: 'counterD' },
-      { mapper: 'counterA + counterB' },
-      { mapper: 'counterAB + counterC' },
-      { mapper: 'counterAB + counterD' },
-      { mapper: 'counterAB_C + counterAB_D' },
-    ]);
+    expect(mappingLogs).toEqual(
+      expect.arrayContaining([
+        { mapper: 'counterA' },
+        { mapper: 'counterB' },
+        { mapper: 'counterC' },
+        { mapper: 'counterD' },
+        { mapper: 'counterA + counterB' },
+        { mapper: 'counterAB + counterC' },
+        { mapper: 'counterAB + counterD' },
+        { mapper: 'counterAB_C + counterAB_D' },
+      ])
+    );
 
     mappingLogs = [];
     renderingLogs = [];
@@ -211,14 +215,16 @@ describe('nested nested selector', () => {
       { component: 'AB_C', counterAB_C: 3 },
       { component: 'AB_C__AB_D', counterAB_C__AB_D: 5 },
     ]);
-    expect(mappingLogs).toEqual([
-      { mapper: 'counterA' },
-      { mapper: 'counterB' },
-      { mapper: 'counterC' },
-      { mapper: 'counterD' },
-      { mapper: 'counterAB + counterC' },
-      { mapper: 'counterAB_C + counterAB_D' },
-    ]);
+    expect(mappingLogs).toEqual(
+      expect.arrayContaining([
+        { mapper: 'counterA' },
+        { mapper: 'counterB' },
+        { mapper: 'counterC' },
+        { mapper: 'counterD' },
+        { mapper: 'counterAB + counterC' },
+        { mapper: 'counterAB_C + counterAB_D' },
+      ])
+    );
 
     mappingLogs = [];
     renderingLogs = [];
@@ -228,13 +234,15 @@ describe('nested nested selector', () => {
       { component: 'AB_D', counterAB_D: 3 },
       { component: 'AB_C__AB_D', counterAB_C__AB_D: 6 },
     ]);
-    expect(mappingLogs).toEqual([
-      { mapper: 'counterA' },
-      { mapper: 'counterB' },
-      { mapper: 'counterC' },
-      { mapper: 'counterD' },
-      { mapper: 'counterAB + counterD' },
-      { mapper: 'counterAB_C + counterAB_D' },
-    ]);
+    expect(mappingLogs).toEqual(
+      expect.arrayContaining([
+        { mapper: 'counterA' },
+        { mapper: 'counterB' },
+        { mapper: 'counterC' },
+        { mapper: 'counterD' },
+        { mapper: 'counterAB + counterD' },
+        { mapper: 'counterAB_C + counterAB_D' },
+      ])
+    );
   });
 });

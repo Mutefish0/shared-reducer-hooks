@@ -113,7 +113,9 @@ describe('createSelector from two individul reducers', () => {
       { component: 'A', counterA: 1 },
       { component: 'C', counterC: 1 },
     ]);
-    expect(mappingLogs).toEqual([{ mapper: 'counterA' }, { mapper: 'counterA + counterB' }]);
+    expect(mappingLogs).toEqual(
+      expect.arrayContaining([{ mapper: 'counterA' }, { mapper: 'counterA + counterB' }])
+    );
 
     mappingLogs = [];
     renderingLogs = [];
@@ -122,6 +124,8 @@ describe('createSelector from two individul reducers', () => {
       { component: 'B', counterB: 1 },
       { component: 'C', counterC: 2 },
     ]);
-    expect(mappingLogs).toEqual([{ mapper: 'counterB' }, { mapper: 'counterA + counterB' }]);
+    expect(mappingLogs).toEqual(
+      expect.arrayContaining([{ mapper: 'counterB' }, { mapper: 'counterA + counterB' }])
+    );
   });
 });

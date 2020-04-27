@@ -91,10 +91,12 @@ describe('nested components', () => {
       { component: 'B', counter: 2 },
       { component: 'C', counter: 2 },
     ]);
-    expect(mappingLogs).toEqual([
-      {
-        mapper: 'counter',
-      },
-    ]);
+    expect(mappingLogs).toEqual(
+      expect.arrayContaining([
+        {
+          mapper: 'counter',
+        },
+      ])
+    );
   });
 });
