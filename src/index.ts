@@ -1,11 +1,11 @@
-import {Reducer, useEffect, useState as useReactState} from 'react';
+import { Reducer, useEffect, useState as useReactState } from 'react';
 
 type Callback = () => any;
 function noop() {}
 
 interface Emitter {
   ids: number[];
-  callbackEntity: {[key: number]: Callback};
+  callbackEntity: { [key: number]: Callback };
   digOn: typeof digOn;
   layOn: typeof layOn;
   off: typeof off;
@@ -37,7 +37,7 @@ function emit(this: Emitter) {
   updates.forEach((u) => u());
 }
 function createEmitter(): Emitter {
-  return {ids: [], callbackEntity: {}, digOn, layOn, off, emit};
+  return { ids: [], callbackEntity: {}, digOn, layOn, off, emit };
 }
 
 interface Token {
@@ -57,8 +57,8 @@ export default function SharedReducer<S, A>(reducer: Reducer<S, A>) {
   let store = reducer([][0], {} as A);
   let maxTokenId: number = 0;
   let maxMapperId: number = 0;
-  let batchFlags: {[key: number]: boolean} = {};
-  let mapperContexts: MapperContext<S, any>[] = [];
+  let batchFlags: { [key: number]: boolean } = {};
+  const mapperContexts: MapperContext<S, any>[] = [];
   const emitter = createEmitter();
 
   function useToken(): [Token, (t: Token) => void] {
@@ -81,7 +81,7 @@ export default function SharedReducer<S, A>(reducer: Reducer<S, A>) {
       mapper,
       versionId: 0,
       cache: mapper(store) as MS,
-      notifies: []
+      notifies: [],
     };
     mapperContexts.push(mapperContext);
 
@@ -95,7 +95,7 @@ export default function SharedReducer<S, A>(reducer: Reducer<S, A>) {
         emitter.layOn(token.id, () => {
           if (mapperContext.versionId !== token.versionId) {
             token.versionId = mapperContext.versionId;
-            return () => !batchFlags[token.id] && forceUpdate({...token});
+            return () => !batchFlags[token.id] && forceUpdate({ ...token });
           }
         });
         return () => {
@@ -104,7 +104,7 @@ export default function SharedReducer<S, A>(reducer: Reducer<S, A>) {
       }, []);
 
       return mapperContext.cache;
-    };
+    }
 
     useMappedState.subscribe = subscribe;
 
@@ -132,36 +132,50 @@ export default function SharedReducer<S, A>(reducer: Reducer<S, A>) {
 // 当且仅当依赖的状态发生改变，才会重新进行计算
 // 可以有效提升性能，同时避免出现死循环问题
 type ReturnArray<T> = {
-  [P in keyof T]: T[P] extends() => infer U ? () => U : () => T[P];
-};  // 变长参数类型推断
+  [P in keyof T]: T[P] extends () => infer U ? () => U : () => T[P];
+}; // 变长参数类型推断
 type Args<T> = {
   [P in keyof T]: T[P] extends infer U ? U : T[P];
-};  // 变长参数类型推断
-export function
-    createSelector<T0, T extends [any, any, any, any, any, any, any, any]>(
-        useMappedStates: ReturnArray<T>, selector: (args: Args<T>) => T0): () =>
-        T0;
-export function
-    createSelector<T0, T extends [any, any, any, any, any, any, any]>(
-        useMappedStates: ReturnArray<T>, selector: (args: Args<T>) => T0): () =>
-        T0;
+}; // 变长参数类型推断
+export function createSelector<T0, T extends [any, any, any, any, any, any, any, any]>(
+  useMappedStates: ReturnArray<T>,
+  selector: (args: Args<T>) => T0
+): () => T0;
+export function createSelector<T0, T extends [any, any, any, any, any, any, any]>(
+  useMappedStates: ReturnArray<T>,
+  selector: (args: Args<T>) => T0
+): () => T0;
 export function createSelector<T0, T extends [any, any, any, any, any, any]>(
-    useMappedStates: ReturnArray<T>, selector: (args: Args<T>) => T0): () => T0;
+  useMappedStates: ReturnArray<T>,
+  selector: (args: Args<T>) => T0
+): () => T0;
 export function createSelector<T0, T extends [any, any, any, any, any]>(
-    useMappedStates: ReturnArray<T>, selector: (args: Args<T>) => T0): () => T0;
+  useMappedStates: ReturnArray<T>,
+  selector: (args: Args<T>) => T0
+): () => T0;
 export function createSelector<T0, T extends [any, any, any, any]>(
-    useMappedStates: ReturnArray<T>, selector: (args: Args<T>) => T0): () => T0;
+  useMappedStates: ReturnArray<T>,
+  selector: (args: Args<T>) => T0
+): () => T0;
 export function createSelector<T0, T extends [any, any, any]>(
-    useMappedStates: ReturnArray<T>, selector: (args: Args<T>) => T0): () => T0;
+  useMappedStates: ReturnArray<T>,
+  selector: (args: Args<T>) => T0
+): () => T0;
 export function createSelector<T0, T extends [any, any]>(
-    useMappedStates: ReturnArray<T>, selector: (args: Args<T>) => T0): () => T0;
+  useMappedStates: ReturnArray<T>,
+  selector: (args: Args<T>) => T0
+): () => T0;
 export function createSelector<T0, T extends [any]>(
-    useMappedStates: ReturnArray<T>, selector: (args: Args<T>) => T0): () => T0;
+  useMappedStates: ReturnArray<T>,
+  selector: (args: Args<T>) => T0
+): () => T0;
 export function createSelector<T0, T extends any[]>(
-    useMappedStates: ReturnArray<T>, selector: (args: Args<T>) => T0) {
+  useMappedStates: ReturnArray<T>,
+  selector: (args: Args<T>) => T0
+) {
   let cache: T0;
   let useCache = false;
-  let notifies: (() => void)[] = [];
+  const notifies: (() => void)[] = [];
 
   function subscribe(_notify: () => void) {
     notifies.push(_notify);
